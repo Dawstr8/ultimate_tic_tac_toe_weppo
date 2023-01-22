@@ -1,12 +1,21 @@
 <!-- views/app.ejs -->
 <html>
-<meta charset="utf-8" />
+    <meta charset="utf-8" />
 
-<head>
-</head>
+    <head>
+    </head>
 
-<body>
-    <div>Init</div>
-</body>
-
+    <body>
+        <form method="POST">
+            <div>
+                Username: <input type='text' name='username' value='<%= username %>' />
+            </div>
+            <button>Save</button>
+            <% if (locals.message) { %>
+                <div>
+                    <%= locals.message %>
+                </div>
+            <% } %>
+        </form>
+    </body>
 </html>
