@@ -1,11 +1,58 @@
 <!-- views/rooms.ejs -->
 <html>
-    <meta charset="utf-8" />
+<meta charset="utf-8" />
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    window.addEventListener('load', function () {
+        var socket = io();
 
-    <head>
-    </head>
+        // joining room
+        function addListenersToJoinRoomButtons() {
+            var btnJoinRoomGroup = document.getElementsByClassName('btnJoinRoom');
+            for (var i = 0; i < btnJoinRoomGroup.length; i++) {
+                btnJoinRoomGroup[i].addEventListener('click', function (event) {
+                    var roomId = this.getAttribute("data-roomid");
+                    socket.emit('join room', roomId);
+                });
+            }
+        };
+        addListenersToJoinRoomButtons();
+        
+        socket.on('redirect', function(destination) {
+            window.location.href = destination;
+        });
 
-    <body>
-        <div>Rooms</div>
-    </body>
+        // creating room
+        var btnCreateRoom = document.getElementById('btnCreateRoom');
+        btnCreateRoom.addEventListener('click', function () {
+            socket.emit('create room');
+        });
+
+        socket.on('room created', function(id) {
+            var roomsList = document.getElementById('roomsList');
+            roomsList.innerHTML += '<li id="roomList__room' + id + '">' +
+                                        '<span>' + id + '</span>\n' +
+                                        '<button data-roomid="' + id + '" class="btnJoinRoom">Join room</button>' +
+                                    '</li>';
+            addListenersToJoinRoomButtons();
+        });
+
+    });
+</script>
+
+<head>
+</head>
+
+<body>
+    <ul id="roomsList">
+        <% for (let id in rooms) { %>
+            <li id="roomList__room<%= id %>">
+                <span><%- id %></span>
+                <button data-roomid="<%= id %>" class="btnJoinRoom">Join room</button>
+            </li>
+        <% } %>
+    </ul>
+    <button id='btnCreateRoom'>Create room</button>
+</body>
+
 </html>
