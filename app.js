@@ -2,7 +2,6 @@
 var http = require('http');
 var socket = require('socket.io');
 var express = require('express');
-var crypto = require("crypto");
 
 var app = express();
 var server = http.createServer(app);
@@ -33,7 +32,7 @@ app.post('/', (req, res) => {
 });
 
 app.get('/rooms', function (req, res) {
-    res.render('rooms', { rooms });
+    res.render('rooms', { rooms: rooms.roomsList });
     res.end();
 });
 
@@ -42,36 +41,48 @@ app.get('/game/:id', function (req, res) {
     res.end();
 });
 
+const Rooms = require('./rooms.js');
 var users = {};
-var rooms = {};
-var roomsNr = 0;
+var rooms = new Rooms();
 
 io.on('connection', function(socket) {
-    console.log('client connected:' + socket.id);
-    users[socket.id] = { username: '' };
+    users[socket.id] = { username: null, room: null };
 
     // creating room
-    socket.on('create room', () => createRoom(socket));
+    socket.on('create room', () => {
+        const roomId = rooms.createRoom();
+        socket.emit('room created', roomId);
+        console.log(rooms.roomsList);
+    });
 
     // joining room
-    socket.on('join room', (roomId) => joinRoom(socket, roomId)); 
+    socket.on('join room', (roomId) => {
+        if (users[socket.id].room === null) {
+            const success = rooms.joinRoom(socket.id, roomId);
+            if (success) {
+                users[socket.id].room = roomId;
+                var destination = '/game/' + roomId;
+                socket.emit('redirect', destination);
+            }
+        }
+    });
+
+    // leaving room
+    socket.on('leave room', () => {
+        if (users[socket.id].room !== null) {
+            rooms.leaveRoom(socket.id, users[socket.id].room);
+        }
+    });
+
+    // disconnecting
+    socket.on('disconnect', (reason) => {
+        if (users[socket.id].room !== null) {
+            rooms.leaveRoom(socket.id, users[socket.id].room);
+        }
+        delete users[socket.id];
+    })
 });
 
-function createRoom(socket) {
-    rooms[roomsNr] = {
-        id: roomsNr,
-        players: [socket.id],
-    }
-    io.emit('room created', roomsNr );
-
-    roomsNr += 1;
-}
-
-function joinRoom(socket, roomid) {
-    console.log('join');
-    var destination = '/game/' + roomid;
-    socket.emit('redirect', destination);
-};
 
 server.listen(process.env.PORT || 3000);
 console.log('server listens');

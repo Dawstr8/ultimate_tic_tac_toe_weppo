@@ -1,7 +1,7 @@
-export class UltimateTicTacToeGame {
+class UltimateTicTacToeGame {
     constructor() {
         this.bigBoard = this.initBigBoard(),
-        this.smallBoards = this.smallBoards(),
+        this.smallBoards = this.initSmallBoards(),
         this.winningPositions = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]],
         this.lastMove = this.deepCopy([null, null]);;
         this.possibleMoves = this.initPossibleMoves();
@@ -83,14 +83,14 @@ export class UltimateTicTacToeGame {
 
     initBigBoard() {
         const emptyBoard = [null, null, null, null, null, null, null, null, null];
-        this.bigBoard = deepCopy(emptyBoard);
+        this.bigBoard = this.deepCopy(emptyBoard);
     }
 
     initSmallBoards() {
         const emptyBoard = [null, null, null, null, null, null, null, null, null];
-        this.smallBoards = [deepCopy(emptyBoard), deepCopy(emptyBoard), deepCopy(emptyBoard),
-                            deepCopy(emptyBoard), deepCopy(emptyBoard), deepCopy(emptyBoard),
-                            deepCopy(emptyBoard), deepCopy(emptyBoard), deepCopy(emptyBoard)];
+        this.smallBoards = [this.deepCopy(emptyBoard), this.deepCopy(emptyBoard), this.deepCopy(emptyBoard),
+                            this.deepCopy(emptyBoard), this.deepCopy(emptyBoard), this.deepCopy(emptyBoard),
+                            this.deepCopy(emptyBoard), this.deepCopy(emptyBoard), this.deepCopy(emptyBoard)];
     }
 
     resetGame() {
@@ -102,3 +102,5 @@ export class UltimateTicTacToeGame {
         return JSON.parse(JSON.stringify(object));
     }
 }
+
+module.exports = UltimateTicTacToeGame
