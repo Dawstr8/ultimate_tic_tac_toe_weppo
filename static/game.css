@@ -1,0 +1,22 @@
+.board {
+    width: 600px;
+    display: flex;
+    flex-wrap: wrap;
+    position: relative;
+}
+
+.board__smallBoard {
+    width: 186px;
+    display: flex;
+    flex-wrap: wrap;
+    border: 2px solid black;
+    position: relative;
+}
+
+.board__field {
+    width: 60px;
+    height: 60px;
+    border: 1px solid black;
+    display: flex;
+    flex-wrap: wrap;
+}

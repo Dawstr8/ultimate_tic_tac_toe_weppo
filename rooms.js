@@ -27,7 +27,7 @@ class Rooms {
     };
 
     leaveRoom(userId, roomId) {
-        this.roomsList[roomId] = this.roomsList[roomId].players.filter(user => user !== userId);
+        this.roomsList[roomId].players = this.roomsList[roomId].players.filter(user => user !== userId);
     }
 
 }

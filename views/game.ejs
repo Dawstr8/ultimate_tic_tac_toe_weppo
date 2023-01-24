@@ -3,9 +3,42 @@
     <meta charset="utf-8" />
 
     <head>
+        <link rel="stylesheet" href="/game.css" type="text/css">
+        <script src="/socket.io/socket.io.js"></script>
+        <script>
+            window.addEventListener('load', function () {
+                var socket = io();
+        
+                // making move
+                function addListenersToFieldsButtons() {
+                    var fieldGroup = document.getElementsByClassName('board__field');
+                    console.log(fieldGroup);
+                    for (var i = 0; i < fieldGroup.length; i++) {
+                        fieldGroup[i].addEventListener('click', function (event) {
+                            var fieldId = this.getAttribute("id");
+                            socket.emit('make move', fieldId);
+                        });
+                    }
+                };
+                addListenersToFieldsButtons();
+
+                socket.on('move made', function(fieldId, player) {
+                    console.log('move made', fieldId, player);
+                });
+
+            });
+        </script>
     </head>
 
     <body>
-        <div>game</div>
+        <div class="board">
+            <% for (let i = 0; i < 9; i++) { %>
+            <div id="<%=i%>" class="board__smallBoard">
+                <% for (let j = 0; j < 9; j++) { %>
+                    <div id="<%=i%><%=j%>" class="board__field"><%= locals.game.smallBoards[i][j] %></div>
+                <% } %>
+            </div>
+            <% } %>
+        </div>
     </body>
 </html>

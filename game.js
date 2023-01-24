@@ -5,6 +5,7 @@ class UltimateTicTacToeGame {
         this.winningPositions = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]],
         this.lastMove = this.deepCopy([null, null]);;
         this.possibleMoves = this.initPossibleMoves();
+        this.turn = 'X';
     }
 
     checkBoardWinner(board) {
@@ -14,7 +15,7 @@ class UltimateTicTacToeGame {
             }
         }
 
-        return board.includes(0) ? null : 0;
+        return board.includes(null) ? null : 0;
     }
 
     get winner() {
@@ -59,11 +60,12 @@ class UltimateTicTacToeGame {
 
     makeMove(player, bigBoardField, smallBoardField) {
         let move = [bigBoardField, smallBoardField]
-        if (!this.gameEnded && this.isMovePossible(move)) {
+        if (!this.gameEnded && this.turn === player && this.isMovePossible(move)) {
             this.smallBoards[move[0]][move[1]] = player;
             this.bigBoard[move[0]] = this.checkBoardWinner(this.smallBoards[move[0]])
             
             this.lastMove = move;
+            this.turn = this.turn === 'X' ? 'O' : 'X';
         
             return move;
         }
@@ -83,19 +85,19 @@ class UltimateTicTacToeGame {
 
     initBigBoard() {
         const emptyBoard = [null, null, null, null, null, null, null, null, null];
-        this.bigBoard = this.deepCopy(emptyBoard);
+        return this.deepCopy(emptyBoard);
     }
 
     initSmallBoards() {
         const emptyBoard = [null, null, null, null, null, null, null, null, null];
-        this.smallBoards = [this.deepCopy(emptyBoard), this.deepCopy(emptyBoard), this.deepCopy(emptyBoard),
-                            this.deepCopy(emptyBoard), this.deepCopy(emptyBoard), this.deepCopy(emptyBoard),
-                            this.deepCopy(emptyBoard), this.deepCopy(emptyBoard), this.deepCopy(emptyBoard)];
+        return [this.deepCopy(emptyBoard), this.deepCopy(emptyBoard), this.deepCopy(emptyBoard),
+                this.deepCopy(emptyBoard), this.deepCopy(emptyBoard), this.deepCopy(emptyBoard),
+                this.deepCopy(emptyBoard), this.deepCopy(emptyBoard), this.deepCopy(emptyBoard)];
     }
 
     resetGame() {
         this.initBigBoard();
-        this.initBigBoard();  
+        this.initSmallBoards();
     }
 
     deepCopy(object) {

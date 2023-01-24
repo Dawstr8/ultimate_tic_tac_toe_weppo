@@ -12,7 +12,13 @@ app.set('view engine', 'ejs');
 app.set('views', './views');
 
 app.use(express.urlencoded({extended:true}));
+app.use(express.static( "./static" ));
 
+const Rooms = require('./rooms.js');
+var users = {};
+var rooms = new Rooms();
+
+// ENDPOINTS
 app.get('/', function (req, res) {
     res.render('app', { username: ''});
     res.end();
@@ -20,8 +26,7 @@ app.get('/', function (req, res) {
 
 app.post('/', (req, res) => {
     var username = req.body.username;
-
-    if ( username && username.length >= 3 ) { 
+    if ( username && username.length >= 3 ) {
         res.redirect('/rooms');
     } else {
         res.render('app', { 
@@ -37,22 +42,26 @@ app.get('/rooms', function (req, res) {
 });
 
 app.get('/game/:id', function (req, res) {
-    res.render('game');
+    const id = req.params.id;
+    if (rooms.roomsList.hasOwnProperty(id)) {
+        res.render('game', { game: rooms.roomsList[id].game, players: rooms.roomsList[id].players, id });
+    } else {
+        res.redirect('/rooms');
+    }
+    
     res.end();
 });
 
-const Rooms = require('./rooms.js');
-var users = {};
-var rooms = new Rooms();
-
+// SOCKETS LOGIC
 io.on('connection', function(socket) {
     users[socket.id] = { username: null, room: null };
+
+    // ROOMS MANAGEMENT
 
     // creating room
     socket.on('create room', () => {
         const roomId = rooms.createRoom();
         socket.emit('room created', roomId);
-        console.log(rooms.roomsList);
     });
 
     // joining room
@@ -61,9 +70,12 @@ io.on('connection', function(socket) {
             const success = rooms.joinRoom(socket.id, roomId);
             if (success) {
                 users[socket.id].room = roomId;
+                console.log(socket.id, users[socket.id].room);
                 var destination = '/game/' + roomId;
                 socket.emit('redirect', destination);
+                socket.join(roomId);
             }
+            
         }
     });
 
@@ -71,6 +83,7 @@ io.on('connection', function(socket) {
     socket.on('leave room', () => {
         if (users[socket.id].room !== null) {
             rooms.leaveRoom(socket.id, users[socket.id].room);
+            users[socket.id].room = null;
         }
     });
 
@@ -81,6 +94,18 @@ io.on('connection', function(socket) {
         }
         delete users[socket.id];
     })
+
+    // GAME STATE MANAGEMENT
+    socket.on('make move', (fieldId) => {
+        const roomId = users[socket.id].room;
+        console.log(socket.id, users[socket.id].room);
+        const game = rooms.roomsList[roomId].game;
+        const player = rooms.roomsList[roomId].players[0] === socket.id ? 'X' : 'O';
+        const move = game.makeMove(player, fieldId[0], fieldId[1]);
+        if (move !== null) {
+            io.to(roomId).emit('move made', move[0].toString() + move[1].toString(), player);
+        }
+    });
 });
 
 
