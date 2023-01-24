@@ -23,7 +23,7 @@ class UltimateTicTacToeGame {
     }
 
     get gameEnded() {
-        return isNull(winner);
+        return this.winner === null;
     }
 
     initPossibleMoves() {
@@ -60,6 +60,7 @@ class UltimateTicTacToeGame {
 
     makeMove(player, bigBoardField, smallBoardField) {
         let move = [bigBoardField, smallBoardField]
+        console.log(this.gameEnded, this.turn === player, this.isMovePossible(move));
         if (!this.gameEnded && this.turn === player && this.isMovePossible(move)) {
             this.smallBoards[move[0]][move[1]] = player;
             this.bigBoard[move[0]] = this.checkBoardWinner(this.smallBoards[move[0]])

@@ -17,6 +17,8 @@ app.use(express.static( "./static" ));
 const Rooms = require('./rooms.js');
 var users = {};
 var rooms = new Rooms();
+var socketIdToUuid = {};
+var knownUuids = [];
 
 // ENDPOINTS
 app.get('/', function (req, res) {
@@ -54,9 +56,14 @@ app.get('/game/:id', function (req, res) {
 
 // SOCKETS LOGIC
 io.on('connection', function(socket) {
-    users[socket.id] = { username: null, room: null };
+    socket.on('connected', (clientUuid) => {
+        if (!knownUuids.includes(clientUuid)) {
+            knownUuids.push(clientUuid);
+            users[clientUuid] = { username: null, room: null };
+        }
 
-    // ROOMS MANAGEMENT
+        socketIdToUuid[socket.id] = clientUuid;
+    });
 
     // creating room
     socket.on('create room', () => {
@@ -66,11 +73,10 @@ io.on('connection', function(socket) {
 
     // joining room
     socket.on('join room', (roomId) => {
-        if (users[socket.id].room === null) {
-            const success = rooms.joinRoom(socket.id, roomId);
+        if (users[socketIdToUuid[socket.id]].room === null) {
+            const success = rooms.joinRoom(socketIdToUuid[socket.id], roomId);
             if (success) {
-                users[socket.id].room = roomId;
-                console.log(socket.id, users[socket.id].room);
+                users[socketIdToUuid[socket.id]].room = roomId;
                 var destination = '/game/' + roomId;
                 socket.emit('redirect', destination);
                 socket.join(roomId);
@@ -81,33 +87,29 @@ io.on('connection', function(socket) {
 
     // leaving room
     socket.on('leave room', () => {
-        if (users[socket.id].room !== null) {
-            rooms.leaveRoom(socket.id, users[socket.id].room);
-            users[socket.id].room = null;
+        if (users[socketIdToUuid[socket.id]].room !== null) {
+            rooms.leaveRoom(socketIdToUuid[socket.id], users[socketIdToUuid[socket.id]].room);
+            users[socketIdToUuid[socket.id]].room = null;
         }
     });
 
     // disconnecting
     socket.on('disconnect', (reason) => {
-        if (users[socket.id].room !== null) {
-            rooms.leaveRoom(socket.id, users[socket.id].room);
-        }
-        delete users[socket.id];
+        delete socketIdToUuid[socket.id];
     })
 
-    // GAME STATE MANAGEMENT
     socket.on('make move', (fieldId) => {
-        const roomId = users[socket.id].room;
-        console.log(socket.id, users[socket.id].room);
+        const roomId = users[socketIdToUuid[socket.id]].room;
         const game = rooms.roomsList[roomId].game;
-        const player = rooms.roomsList[roomId].players[0] === socket.id ? 'X' : 'O';
-        const move = game.makeMove(player, fieldId[0], fieldId[1]);
+        const player = rooms.roomsList[roomId].players[0] === socketIdToUuid[socket.id] ? 'X' : 'O';
+        console.log(player);
+        const move = game.makeMove(player, parseInt(fieldId[0]), parseInt(fieldId[1]));
+        console.log(move);
         if (move !== null) {
             io.to(roomId).emit('move made', move[0].toString() + move[1].toString(), player);
         }
     });
 });
-
 
 server.listen(process.env.PORT || 3000);
 console.log('server listens');

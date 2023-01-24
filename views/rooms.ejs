@@ -6,6 +6,23 @@
     window.addEventListener('load', function () {
         var socket = io();
 
+        function generateRandomUuid() {
+            return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+                (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+            );
+        }
+
+        socket.on("connect", () => {
+            const CLIENT_UUID = 'uuid';
+            let clientUuid = localStorage.getItem(CLIENT_UUID);
+            if (!clientUuid) {
+                clientUuid = generateRandomUuid();
+                localStorage.setItem(CLIENT_UUID, clientUuid);
+            }
+
+            socket.emit('connected', clientUuid);
+        });
+
         // joining room
         function addListenersToJoinRoomButtons() {
             var btnJoinRoomGroup = document.getElementsByClassName('btnJoinRoom');
