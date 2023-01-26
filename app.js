@@ -54,21 +54,23 @@ app.get('/game/:id', function (req, res) {
     res.end();
 });
 
-// SOCKETS LOGIC
 io.on('connection', function(socket) {
     socket.on('connected', (clientUuid) => {
+        socketIdToUuid[socket.id] = clientUuid;
         if (!knownUuids.includes(clientUuid)) {
             knownUuids.push(clientUuid);
             users[clientUuid] = { username: null, room: null };
+        } else {
+            socket.join(users[clientUuid].room);
         }
 
-        socketIdToUuid[socket.id] = clientUuid;
+        
     });
 
     // creating room
     socket.on('create room', () => {
         const roomId = rooms.createRoom();
-        socket.emit('room created', roomId);
+        io.emit('room created', roomId);
     });
 
     // joining room
@@ -102,11 +104,9 @@ io.on('connection', function(socket) {
         const roomId = users[socketIdToUuid[socket.id]].room;
         const game = rooms.roomsList[roomId].game;
         const player = rooms.roomsList[roomId].players[0] === socketIdToUuid[socket.id] ? 'X' : 'O';
-        console.log(player);
         const move = game.makeMove(player, parseInt(fieldId[0]), parseInt(fieldId[1]));
-        console.log(move);
         if (move !== null) {
-            io.to(roomId).emit('move made', move[0].toString() + move[1].toString(), player);
+            io.to(roomId).emit('move made', move[0].toString() + move[1].toString(), player, game);
         }
     });
 });

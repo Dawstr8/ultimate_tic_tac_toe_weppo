@@ -5,12 +5,13 @@ class UltimateTicTacToeGame {
         this.winningPositions = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]],
         this.lastMove = this.deepCopy([null, null]);;
         this.possibleMoves = this.initPossibleMoves();
+        this.possibleBoards = this.deepCopy([true, true, true, true, true, true, true, true, true])
         this.turn = 'X';
     }
 
     checkBoardWinner(board) {
-        for (let position in this.winningPositions) {
-            if (board[position[0]] === board[position[1]] && board[position[0]] === board[position[2]] && board[position[0]] !== 0) {
+        for (let position of this.winningPositions) {
+            if (board[position[0]] === board[position[1]] && board[position[0]] === board[position[2]] && board[position[0]] !== null) {
                 return board[position[0]];
             }
         }
@@ -37,36 +38,48 @@ class UltimateTicTacToeGame {
     }
 
     generatePossibleMoves() {
+        this.generatePossibleBoards();
         let possibleMoves = [];
+        for (let i = 0; i < 9; i++) {
+            if (this.possibleBoards[i]) {
+                for (let j = 0; j < 9; j++) {
+                    if (this.smallBoards[i][j] === null) {
+                        possibleMoves.push([i, j]);
+                    }   
+                } 
+            }
+        }
+
+        return possibleMoves;
+    }
+
+    generatePossibleBoards() {
+        let possibleBoards = [false, false, false, false, false, false, false, false, false];
         const bigBoardField = this.lastMove[1];
         if (this.bigBoard[bigBoardField] === null) {
-            for (let i = 0; i < 9; i++) {
-                if (this.smallBoards[bigBoardField][i] === null) {
-                    possibleMoves.push([bigBoardField, i]);
-                }
-            }
+            possibleBoards[bigBoardField] = true;
         } else {
             for (let i = 0; i < 9; i++) {
                 if (this.bigBoard[i] === null) {
-                    for (let j = 0; j < 9; j++) {
-                        if (this.smallBoards[i][j] === null) {
-                            possibleMoves.push([i, j]);
-                        }   
-                    } 
-                }
+                    possibleBoards[i] = true;
+                }   
             }
         }
+
+        this.possibleBoards = possibleBoards;
     }
 
     makeMove(player, bigBoardField, smallBoardField) {
         let move = [bigBoardField, smallBoardField]
-        console.log(this.gameEnded, this.turn === player, this.isMovePossible(move));
         if (!this.gameEnded && this.turn === player && this.isMovePossible(move)) {
             this.smallBoards[move[0]][move[1]] = player;
+
             this.bigBoard[move[0]] = this.checkBoardWinner(this.smallBoards[move[0]])
             
             this.lastMove = move;
             this.turn = this.turn === 'X' ? 'O' : 'X';
+
+            this.possibleMoves = this.generatePossibleMoves();
         
             return move;
         }

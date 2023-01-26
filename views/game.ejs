@@ -29,7 +29,6 @@
                 // making move
                 function addListenersToFieldsButtons() {
                     var fieldGroup = document.getElementsByClassName('board__field');
-                    console.log(fieldGroup);
                     for (var i = 0; i < fieldGroup.length; i++) {
                         fieldGroup[i].addEventListener('click', function (event) {
                             var fieldId = this.getAttribute("id");
@@ -39,8 +38,23 @@
                 };
                 addListenersToFieldsButtons();
 
-                socket.on('move made', function(fieldId, player) {
-                    console.log('move made', fieldId, player);
+                socket.on('move made', function(fieldId, player, game) {
+                    console.log(fieldId, player);
+                    const field = document.getElementById(fieldId);
+
+                    field.innerHTML += player;
+                    field.classList.add('board__field--' + (player === 'X' ? 'red' : 'blue'));
+
+                    const possibleBoards = game.possibleBoards;
+                    const turn = game.turn;
+                    for (let i = 0; i < possibleBoards.length; i++) {
+                        const smallBoard = document.getElementById(i);
+                        smallBoard.classList.remove("board__smallBoard--red");
+                        smallBoard.classList.remove("board__smallBoard--blue");
+                        if (possibleBoards[i]) {
+                            smallBoard.classList.add('board__smallBoard--' + (turn === 'X' ? 'red' : 'blue'));  
+                        }
+                    }
                 });
 
             });
@@ -50,9 +64,9 @@
     <body>
         <div class="board">
             <% for (let i = 0; i < 9; i++) { %>
-            <div id="<%=i%>" class="board__smallBoard">
+            <div id="<%=i%>" class="board__smallBoard <%= locals.game.possibleBoards[i] ? (locals.game.turn === 'X' ? 'board__smallBoard--red' : 'board__smallBoard--blue') : '' %>">
                 <% for (let j = 0; j < 9; j++) { %>
-                    <div id="<%=i%><%=j%>" class="board__field"><%= locals.game.smallBoards[i][j] %></div>
+                    <div id="<%=i%><%=j%>" class="board__field <%= locals.game.smallBoards[i][j] ? (locals.game.smallBoards[i][j] === 'X' ? 'board__field--red' : 'board__field--blue') : ''%>"><%= locals.game.smallBoards[i][j] %></div>
                 <% } %>
             </div>
             <% } %>

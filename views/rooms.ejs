@@ -46,6 +46,7 @@
         });
 
         socket.on('room created', function(id) {
+            console.log('room created');
             var roomsList = document.getElementById('roomsList');
             roomsList.innerHTML += '<li id="roomList__room' + id + '">' +
                                         '<span>' + id + '</span>\n' +
