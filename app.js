@@ -22,12 +22,6 @@ app.use(express.urlencoded({ extended:true }));
 app.use(sessionMiddleware);
 app.use(createSessionMiddleware(users));
 
-isYourTurn = (uuid, roomId, game) => {
-    let firstPlayer = rooms.roomsList[roomId].players[0];
-    let secondPlayer = rooms.roomsList[roomId].players[1];
-    return (game.turn === 'X' && firstPlayer === uuid) || (game.turn === 'O' && secondPlayer === uuid);
-}
-
 app.get('/', (req, res) => {
     const uuid = req.session.uuid;
     res.render('app', { username: users[uuid].username });
@@ -64,7 +58,8 @@ app.get('/game/:id', function (req, res) {
             let game = rooms.roomsList[roomId].game;
             let firstPlayer = rooms.roomsList[roomId].players[0] ? users[rooms.roomsList[roomId].players[0]].username : 'waiting...';
             let secondPlayer = rooms.roomsList[roomId].players[1] ? users[rooms.roomsList[roomId].players[1]].username : 'waiting...';
-            res.render('game', { game, players: [firstPlayer, secondPlayer], id: roomId, isYourTurn: isYourTurn(uuid, roomId, game) });
+            let yourPlayerNr = rooms.roomsList[roomId].players[0] === uuid ? 'X' : 'O';
+            res.render('game', { game, players: [firstPlayer, secondPlayer], id: roomId, yourPlayerNr });
         } else {
             res.redirect('/rooms');
         }
@@ -102,7 +97,7 @@ io.on('connection', function(socket) {
         const player = rooms.roomsList[roomId].players[0] === uuid ? 'X' : 'O';
         const move = game.makeMove(player, parseInt(fieldId[0]), parseInt(fieldId[1]));
         if (move !== null) {
-            io.to(roomId).emit('move made', move[0].toString() + move[1].toString(), player, game, isYourTurn(uuid, roomId, game));
+            io.to(roomId).emit('move made', move[0].toString() + move[1].toString(), player, game);
         }
     });
 
@@ -158,7 +153,7 @@ io.on('connection', function(socket) {
         let roomId = users[uuid].room;
         let game = rooms.roomsList[roomId].game;
         game.resetGame();
-        io.to(roomId).emit('game reset', game, isYourTurn(uuid, roomId, game));
+        io.to(roomId).emit('game reset', game);
     }
 
 });

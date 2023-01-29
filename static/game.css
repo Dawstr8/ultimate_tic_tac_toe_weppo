@@ -28,6 +28,14 @@
     border: 2px solid blue;
 }
 
+.board__smallBoard--ended {
+    line-height: 182px;
+    font-size: 140px;
+    display: inline-block;
+    flex-wrap: none;
+    text-align: center;
+}
+
 .board__field {
     width: 60px;
     height: 60px;
@@ -43,4 +51,12 @@
 
 .board__field--blue {
     color: blue;
+}
+
+.blue {
+    color: blue;
+}
+
+.red {
+    color: red;
 }

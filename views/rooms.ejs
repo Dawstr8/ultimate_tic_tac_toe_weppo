@@ -37,7 +37,6 @@
         // changing join button state
         socket.on('room state changed', function(id, room, tab) {
             var roomElement = document.getElementById('roomList__room' + id);
-            console.log(roomElement.childNodes);
             var button = roomElement.childNodes[5];
             button.disabled = room.players.length > 1;
             var text = roomElement.childNodes[3];

@@ -23,7 +23,6 @@ class Rooms {
         }
 
         this.roomsList[roomId].players[this.roomsList[roomId].players[0] === null ? 0 : 1] = userId;
-        console.log(this.roomsList[roomId].players);
         return true;
     };
 
