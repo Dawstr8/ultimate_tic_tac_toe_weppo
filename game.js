@@ -6,7 +6,7 @@ class UltimateTicTacToeGame {
         this.lastMove = this.deepCopy([null, null]);;
         this.possibleMoves = this.initPossibleMoves();
         this.possibleBoards = this.deepCopy([true, true, true, true, true, true, true, true, true])
-        this.turn = 'X';
+        this.turn = Math.random() > 0.5 ? 'X' : 'O';
     }
 
     checkBoardWinner(board) {
@@ -110,8 +110,12 @@ class UltimateTicTacToeGame {
     }
 
     resetGame() {
-        this.initBigBoard();
-        this.initSmallBoards();
+        this.bigBoard = this.initBigBoard();
+        this.smallBoards = this.initSmallBoards();
+        this.possibleMoves = this.initPossibleMoves();
+        this.possibleBoards = this.deepCopy([true, true, true, true, true, true, true, true, true]);
+        this.turn = Math.random() < 0.5 ? 'X' : 'O';
+        this.lastMove = [null, null]
     }
 
     deepCopy(object) {

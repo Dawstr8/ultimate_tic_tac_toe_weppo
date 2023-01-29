@@ -101,6 +101,8 @@ io.on('connection', function(socket) {
         }
     });
 
+    socket.on('reset game', () => resetGame(socket));
+
     createRoom = (socket) => {
         let roomId = rooms.createRoom();
         joinRoom(socket, roomId);
@@ -116,11 +118,8 @@ io.on('connection', function(socket) {
             socket.join(roomId);
             io.emit('room state changed', users[uuid].room, rooms.roomsList[users[uuid].room]);
 
-            console.log(rooms.roomsList[roomId].players);
-            console.log(users);
             let firstPlayer = rooms.roomsList[roomId].players[0] ? users[rooms.roomsList[roomId].players[0]].username : 'waiting...';
             let secondPlayer = rooms.roomsList[roomId].players[1] ? users[rooms.roomsList[roomId].players[1]].username : 'waiting...';
-            console.log([firstPlayer, secondPlayer]);
             io.to(roomId).emit('player joined room', [firstPlayer, secondPlayer]);
 
             var destination = '/game/' + roomId;
@@ -148,6 +147,14 @@ io.on('connection', function(socket) {
             users[uuid].room = null;
         }
     };
+
+    resetGame = (socket) => {
+        let uuid = socket.request.session.uuid;
+        let roomId = users[uuid].room;
+        let game = rooms.roomsList[roomId].game;
+        game.resetGame();
+        io.to(roomId).emit('game reset', game);
+    }
 
 });
 

@@ -55,6 +55,30 @@
                     playersElement.innerHTML = players[0] + ' vs ' + players[1];
                 });
 
+                // resetting game
+                const resetGameButton = document.getElementById('resetGameButton');
+                resetGameButton.addEventListener('click', function (event) {
+                    socket.emit('reset game');
+                });
+
+                socket.on('game reset', function(game) {
+                    const boardElement = document.getElementById('board');
+                    boardElement.innerHTML = '';
+                    for (let i = 0; i < 9; i++) {
+                        var isBoardPossible = game.possibleBoards[i];
+                        var turn = game.turn;
+                        var boardClass = isBoardPossible ? ('board__smallBoard--' + (turn === 'X' ? 'red' : 'blue')) : '';
+                        boardElement.innerHTML += '<div id="' + i + '" class="board__smallBoard ' + boardClass + '">';
+                        let smallBoardElement = document.getElementById(i);
+                        for (let j = 0; j < 9; j++) {
+                            var field = game.smallBoards[i][j];
+                            var fieldColor = field ? ('board__field--' + (field === 'X' ? 'red' : 'blue')) : '';
+                            smallBoardElement.innerHTML += '<div id="' + i.toString() + j.toString() + '" class="board__field ' + fieldColor + '"> <%= field %> </div>';
+                        }
+                    }
+                    addListenersToFieldsButtons();
+                });
+
                 // redirecting
                 socket.on('redirect', function(destination) {
                     window.location.href = destination;
@@ -66,7 +90,7 @@
     <body>
         <div class="gameState">
             <div id="players" class="gameState__players"><%= locals.players[0] %> vs <%= locals.players[1] %></div>
-            <div class="board">
+            <div id="board" class="board">
                 <% for (let i = 0; i < 9; i++) { %>
                     <% var isBoardPossible = locals.game.possibleBoards[i]; %>
                     <% var turn = locals.game.turn %>
@@ -82,6 +106,7 @@
             </div>
             <div class="gameState__turn"></div>
             <div class="gameState__winner"></div>
+            <button id="resetGameButton">Reset game</button>
             <button id="leaveRoomButton">Leave room</button>
         </div>
     </body>
