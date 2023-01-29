@@ -10,24 +10,40 @@ class Rooms {
         this.numberOfRooms += 1;
         this.roomsList[this.numberOfRooms] = {
             id: this.numberOfRooms,
-            players: [],
+            players: [null, null],
             game: new UltimateTicTacToeGame(),
         }
 
-        return this.numberOfRooms;
+        return this.numberOfRooms.toString();
     }
 
     joinRoom(userId, roomId) {
-        if (this.roomsList[roomId].players.length > 1) {
+        if (this.roomsList[roomId].players.filter((name) => name !== null).length > 1) {
             return false;
         }
 
-        this.roomsList[roomId].players.push(userId);
+        this.roomsList[roomId].players[this.roomsList[roomId].players[0] === null ? 0 : 1] = userId;
+        console.log(this.roomsList[roomId].players);
         return true;
     };
 
     leaveRoom(userId, roomId) {
-        this.roomsList[roomId].players = this.roomsList[roomId].players.filter(user => user !== userId);
+        if (this.roomsList.hasOwnProperty(roomId)) {
+            this.roomsList[roomId].players = this.roomsList[roomId].players.map((user) => {
+                if (user === userId) {
+                    return null;
+                }
+
+                return user;
+            });
+
+            if (this.roomsList[roomId].players.length === 0) {
+                delete this.roomsList[roomId];
+                return true;
+            }
+            
+        }
+        return false
     }
 
 }

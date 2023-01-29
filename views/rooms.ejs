@@ -6,23 +6,6 @@
     window.addEventListener('load', function () {
         var socket = io();
 
-        function generateRandomUuid() {
-            return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
-                (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-            );
-        }
-
-        socket.on("connect", () => {
-            const CLIENT_UUID = 'uuid';
-            let clientUuid = localStorage.getItem(CLIENT_UUID);
-            if (!clientUuid) {
-                clientUuid = generateRandomUuid();
-                localStorage.setItem(CLIENT_UUID, clientUuid);
-            }
-
-            socket.emit('connected', clientUuid);
-        });
-
         // joining room
         function addListenersToJoinRoomButtons() {
             var btnJoinRoomGroup = document.getElementsByClassName('btnJoinRoom');
@@ -33,11 +16,7 @@
                 });
             }
         };
-        addListenersToJoinRoomButtons();
-        
-        socket.on('redirect', function(destination) {
-            window.location.href = destination;
-        });
+        addListenersToJoinRoomButtons();        
 
         // creating room
         var btnCreateRoom = document.getElementById('btnCreateRoom');
@@ -45,16 +24,41 @@
             socket.emit('create room');
         });
 
-        socket.on('room created', function(id) {
-            console.log('room created');
+        socket.on('room created', function(id, room) {
             var roomsList = document.getElementById('roomsList');
             roomsList.innerHTML += '<li id="roomList__room' + id + '">' +
-                                        '<span>' + id + '</span>\n' +
+                                        '<span>Room number: ' + id + '</span>\n' +
+                                        '<span>Players: ' + room.players.filter((name) => name !== null).length + ' / 2</span>' +
                                         '<button data-roomid="' + id + '" class="btnJoinRoom">Join room</button>' +
                                     '</li>';
             addListenersToJoinRoomButtons();
         });
 
+        // changing join button state
+        socket.on('room state changed', function(id, room, tab) {
+            var roomElement = document.getElementById('roomList__room' + id);
+            console.log(roomElement.childNodes);
+            var button = roomElement.childNodes[5];
+            button.disabled = room.players.length > 1;
+            var text = roomElement.childNodes[3];
+            text.innerHTML = 'Players: ' + room.players.filter(name => name !== null).length + ' / 2'
+        });
+
+        // deleting room
+        socket.on('room deleted', function(id) {
+            const room = document.getElementById('roomList__room' + id);
+            room.parentNode.removeChild(room);
+        });
+
+        // btnChangeUsername
+        var btnChangeUsername = document.getElementById('btnChangeUsername');
+        btnChangeUsername.addEventListener('click', function () {
+            window.location.href = '/';
+        })
+
+        socket.on('redirect', function(destination) {
+            window.location.href = destination;
+        });
     });
 </script>
 
@@ -62,15 +66,18 @@
 </head>
 
 <body>
+    <div>Hello <%= username %>!</div>
     <ul id="roomsList">
         <% for (let id in rooms) { %>
             <li id="roomList__room<%= id %>">
-                <span><%- id %></span>
-                <button data-roomid="<%= id %>" class="btnJoinRoom">Join room</button>
+                <span>Room number: <%- id %></span>
+                <span>Players: <%- rooms[id].players.filter(name => name !== null).length %> / 2</span>
+                <button data-roomid="<%= id %>" <%- rooms[id].players.filter(name => name !== null).length > 1 ? 'disabled' : '' %> class="btnJoinRoom">Join room</button>
             </li>
         <% } %>
     </ul>
-    <button id='btnCreateRoom'>Create room</button>
+    <button id="btnCreateRoom">Create room</button>
+    <button id="btnChangeUsername" class>Change username</button>
 </body>
 
 </html>

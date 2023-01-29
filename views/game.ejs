@@ -8,30 +8,13 @@
         <script>
             window.addEventListener('load', function () {
                 var socket = io();
-
-                function generateRandomUuid() {
-                    return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
-                        (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-                    );
-                }
-
-                socket.on("connect", () => {
-                    const CLIENT_UUID = 'uuid';
-                    let clientUuid = localStorage.getItem(CLIENT_UUID);
-                    if (!clientUuid) {
-                        clientUuid = generateRandomUuid();
-                        localStorage.setItem(CLIENT_UUID, clientUuid);
-                    }
-
-                    socket.emit('connected', clientUuid);
-                });
         
                 // making move
                 function addListenersToFieldsButtons() {
                     var fieldGroup = document.getElementsByClassName('board__field');
                     for (var i = 0; i < fieldGroup.length; i++) {
                         fieldGroup[i].addEventListener('click', function (event) {
-                            var fieldId = this.getAttribute("id");
+                            var fieldId = this.getAttribute('id');
                             socket.emit('make move', fieldId);
                         });
                     }
@@ -39,7 +22,6 @@
                 addListenersToFieldsButtons();
 
                 socket.on('move made', function(fieldId, player, game) {
-                    console.log(fieldId, player);
                     const field = document.getElementById(fieldId);
 
                     field.innerHTML += player;
@@ -57,19 +39,50 @@
                     }
                 });
 
+                // leaving room
+                const leaveRoomButton = document.getElementById('leaveRoomButton');
+                leaveRoomButton.addEventListener('click', function (event) {
+                    socket.emit('leave room');
+                });
+
+                socket.on('player left room', function(players) {
+                    var playersElement = document.getElementById("players");
+                    playersElement.innerHTML = players[0] + ' vs ' + players[1];
+                });
+
+                socket.on('player joined room', function(players) {
+                    var playersElement = document.getElementById("players");
+                    playersElement.innerHTML = players[0] + ' vs ' + players[1];
+                });
+
+                // redirecting
+                socket.on('redirect', function(destination) {
+                    window.location.href = destination;
+                });
             });
         </script>
     </head>
 
     <body>
-        <div class="board">
-            <% for (let i = 0; i < 9; i++) { %>
-            <div id="<%=i%>" class="board__smallBoard <%= locals.game.possibleBoards[i] ? (locals.game.turn === 'X' ? 'board__smallBoard--red' : 'board__smallBoard--blue') : '' %>">
-                <% for (let j = 0; j < 9; j++) { %>
-                    <div id="<%=i%><%=j%>" class="board__field <%= locals.game.smallBoards[i][j] ? (locals.game.smallBoards[i][j] === 'X' ? 'board__field--red' : 'board__field--blue') : ''%>"><%= locals.game.smallBoards[i][j] %></div>
+        <div class="gameState">
+            <div id="players" class="gameState__players"><%= locals.players[0] %> vs <%= locals.players[1] %></div>
+            <div class="board">
+                <% for (let i = 0; i < 9; i++) { %>
+                    <% var isBoardPossible = locals.game.possibleBoards[i]; %>
+                    <% var turn = locals.game.turn %>
+                    <% var boardClass = isBoardPossible ? ('board__smallBoard--' + (turn === 'X' ? 'red' : 'blue')) : ''; %>
+                    <div id="<%=i%>" class="board__smallBoard <%= boardClass %>">
+                    <% for (let j = 0; j < 9; j++) { %>
+                        <% var field = game.smallBoards[i][j]; %>
+                        <% var fieldColor = field ? ('board__field--' + (field === 'X' ? 'red' : 'blue')) : ''; %>
+                        <div id="<%=i%><%=j%>" class="board__field <%= fieldColor %>"> <%= field %> </div>
+                    <% } %>
+                </div>
                 <% } %>
             </div>
-            <% } %>
+            <div class="gameState__turn"></div>
+            <div class="gameState__winner"></div>
+            <button id="leaveRoomButton">Leave room</button>
         </div>
     </body>
 </html>
