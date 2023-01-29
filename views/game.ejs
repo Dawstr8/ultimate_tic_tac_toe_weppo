@@ -21,7 +21,7 @@
                 };
                 addListenersToFieldsButtons();
 
-                socket.on('move made', function(fieldId, player, game) {
+                socket.on('move made', function(fieldId, player, game, isYourTurn) {
                     const field = document.getElementById(fieldId);
 
                     field.innerHTML += player;
@@ -37,7 +37,11 @@
                             smallBoard.classList.add('board__smallBoard--' + (turn === 'X' ? 'red' : 'blue'));  
                         }
                     }
+
+                    const turnElement = document.getElementById('gameState__turn');
+                    turnElement.innerHTML = isYourTurn ? "It's your turn to make a move" : "";
                 });
+
 
                 // leaving room
                 const leaveRoomButton = document.getElementById('leaveRoomButton');
@@ -61,7 +65,7 @@
                     socket.emit('reset game');
                 });
 
-                socket.on('game reset', function(game) {
+                socket.on('game reset', function(game, isYourTurn) {
                     const boardElement = document.getElementById('board');
                     boardElement.innerHTML = '';
                     for (let i = 0; i < 9; i++) {
@@ -76,6 +80,9 @@
                             smallBoardElement.innerHTML += '<div id="' + i.toString() + j.toString() + '" class="board__field ' + fieldColor + '"> <%= field %> </div>';
                         }
                     }
+                    const turnElement = document.getElementById('gameState__turn');
+                    console.log(isYourTurn);
+                    turnElement.innerHTML = isYourTurn ? "It's your turn to make a move" : "";
                     addListenersToFieldsButtons();
                 });
 
@@ -104,8 +111,8 @@
                 </div>
                 <% } %>
             </div>
-            <div class="gameState__turn"></div>
-            <div class="gameState__winner"></div>
+            <div id="gameState__turn" class="gameState__turn"> <%= locals.isYourTurn ? "It's your turn to make a move" : "" %> </div>
+            <div class="gameState__winner"><%= locals.game.winner %></div>
             <button id="resetGameButton">Reset game</button>
             <button id="leaveRoomButton">Leave room</button>
         </div>
