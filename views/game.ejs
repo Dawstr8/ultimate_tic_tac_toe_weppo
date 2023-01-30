@@ -8,10 +8,74 @@
         <script>
             window.addEventListener('load', function () {
                 var socket = io();
-                console.log(yourPlayerNr);
 
-                // making move
-                function addListenersToFieldsButtons() {
+                // helper functions for html changes
+                const playerColorClass = (player) => {
+                    return player === 'X' ? 'red' : 'blue';
+                }
+
+                const updateTurnElement = (turn) => {
+                    const turnElement = document.getElementById('gameState__turn');
+                    turnElement.innerHTML = JSON.stringify(turn) === yourPlayerNr ? 'Your turn' : '';
+                }
+
+                const updateWinnerElement = (game) => {
+                    const winnerElement = document.getElementById('gameState__winner');
+                    winnerElement.innerHTML = game.winner ? (game.winner === yourPlayerNr ? 'You have won' : 'You have lost') : (game.winner === null ? '' : 'Draw')
+                }
+
+                const updatePlayersElement = (players) => {
+                    var playersElement = document.getElementById("players");
+                    playersElement.innerHTML =  players[0] + ' vs ' + players[1];
+                }
+
+                const updateField = (fieldId, player) => {
+                    const field = document.getElementById(fieldId);
+                    field.innerHTML = player;
+                    field.classList.remove('board__field--red');
+                    field.classList.remove('board__field--blue');
+                    if (player) {
+                        field.classList.add('board__field--' + playerColorClass(player));
+                    }
+                    
+                }
+
+                const setSmallBoardIfFinished = (smallBoardId, bigBoard) => {
+                    if (bigBoard[smallBoardId]) {
+                        const smallBoard = document.getElementById(smallBoardId);
+                        var bigBoardField = bigBoard[smallBoardId];
+                        var boardClass = playerColorClass(bigBoardField);
+                        smallBoard.classList.add('board__smallBoard--ended');
+                        smallBoard.classList.add(boardClass);
+                        smallBoard.innerHTML = bigBoardField;
+                    }
+                }
+
+                const setSmallBoardPlayableAfterReset = (smallBoardId) => {
+                    const smallBoard = document.getElementById(smallBoardId);
+                    smallBoard.classList.remove('board__smallBoard--ended');
+                    smallBoard.classList.remove('red');
+                    smallBoard.classList.remove('blue');
+                    smallBoard.innerHTML = '';
+                    for (let i = 0; i < 9; i++) {
+                        smallBoard.innerHTML += '<div id="' + smallBoardId.toString() + i.toString() + '" class="board__field"></div>';
+                    };
+                }
+
+                const updateSmallBoardsPossibleMoves = (bigBoard, possibleBoards, turn) => {
+                    for (let i = 0; i < possibleBoards.length; i++) {
+                        const smallBoard = document.getElementById(i);
+                        if (bigBoard) {
+                            smallBoard.classList.remove("board__smallBoard--red");
+                            smallBoard.classList.remove("board__smallBoard--blue");
+                            if (possibleBoards[i]) {
+                                smallBoard.classList.add('board__smallBoard--' + playerColorClass(turn));  
+                            }
+                        }     
+                    }
+                }
+
+                const addListenersToFieldsButtons = () => {
                     var fieldGroup = document.getElementsByClassName('board__field');
                     for (var i = 0; i < fieldGroup.length; i++) {
                         fieldGroup[i].addEventListener('click', function (event) {
@@ -20,80 +84,50 @@
                         });
                     }
                 };
-                addListenersToFieldsButtons();
 
-                socket.on('move made', function(fieldId, player, game) {
-                    const field = document.getElementById(fieldId);
-
-                    field.innerHTML += player;
-                    field.classList.add('board__field--' + (player === 'X' ? 'red' : 'blue'));
-
-                    const possibleBoards = game.possibleBoards;
-                    const turn = game.turn;
-
-                    if (game.bigBoard[fieldId[0]]) {
-                        const smallBoard = document.getElementById(fieldId[0]);
-                        var bigBoardField = game.bigBoard[fieldId[0]];
-                        var boardClass = bigBoardField === 'X' ? 'red' : 'blue';
-                        smallBoard.innerHTML = '<div id="' + fieldId[0] + '" class="board__smallBoard board__smallBoard--ended ' + boardClass + '">' + bigBoardField +  '</div>';
-                    }
-
-                    for (let i = 0; i < possibleBoards.length; i++) {
-                        const smallBoard = document.getElementById(i);
-                        if (game.bigBoard) {
-                            smallBoard.classList.remove("board__smallBoard--red");
-                            smallBoard.classList.remove("board__smallBoard--blue");
-                            if (possibleBoards[i]) {
-                                smallBoard.classList.add('board__smallBoard--' + (turn === 'X' ? 'red' : 'blue'));  
-                            }
-                        }     
-                    }
-                    
-                    const winnerElement = document.getElementById('gameState__winner');
-                    winnerElement.innerHTML = game.winner ? (game.winner === 'X' ? 'Red player has won' : 'Blue player has won') : (game.winner === null ? '' : 'Draw')
-                });
-
-                // leaving room
+                // click listeners
                 const leaveRoomButton = document.getElementById('leaveRoomButton');
                 leaveRoomButton.addEventListener('click', function (event) {
                     socket.emit('leave room');
                 });
 
-                socket.on('player left room', function(players) {
-                    var playersElement = document.getElementById("players");
-                    playersElement.innerHTML =  'Red player: ' + players[0] + ' vs ' + 'Blue player: ' + players[1];
-                });
-
-                socket.on('player joined room', function(players) {
-                    var playersElement = document.getElementById("players");
-                    playersElement.innerHTML = 'Red player: ' + players[0] + ' vs ' + 'Blue player: ' + players[1];
-                });
-
-                // resetting game
                 const resetGameButton = document.getElementById('resetGameButton');
                 resetGameButton.addEventListener('click', function (event) {
                     socket.emit('reset game');
                 });
 
-                socket.on('game reset', function(game) {
-                    const boardElement = document.getElementById('board');
-                    boardElement.innerHTML = '';
-                    for (let i = 0; i < 9; i++) {
-                        var isBoardPossible = game.possibleBoards[i];
-                        var turn = game.turn;
-                        var boardClass = isBoardPossible ? ('board__smallBoard--' + (turn === 'X' ? 'red' : 'blue')) : '';
-                        boardElement.innerHTML += '<div id="' + i + '" class="board__smallBoard ' + boardClass + '">';
-                        let smallBoardElement = document.getElementById(i);
-                        for (let j = 0; j < 9; j++) {
-                            var field = game.smallBoards[i][j];
-                            var fieldColor = field ? ('board__field--' + (field === 'X' ? 'red' : 'blue')) : '';
-                            smallBoardElement.innerHTML += '<div id="' + i.toString() + j.toString() + '" class="board__field ' + fieldColor + '"> <%= field %> </div>';
-                        }
-                    }
-                    addListenersToFieldsButtons();
+                addListenersToFieldsButtons();
+
+                // socket listeners
+                socket.on('move made', function(fieldId, player, game) {
+                    updateField(fieldId, player);
+
+                    const bigBoard = game.bigBoard;
+                    setSmallBoardIfFinished(fieldId[0], bigBoard);
+                    
+                    const possibleBoards = game.possibleBoards;
+                    const turn = game.turn;
+                    updateSmallBoardsPossibleMoves(bigBoard, possibleBoards, turn); 
+
+                    updateTurnElement(turn);
+                    updateWinnerElement(game);
                 });
 
-                // redirecting
+                socket.on('player left room', updatePlayersElement);
+                socket.on('player joined room', updatePlayersElement);
+                socket.on('game reset', function(game) {
+                    const bigBoard = game.bigBoard;
+                    const turn = game.turn;
+                    const possibleBoards = game.possibleBoards;
+                    for (let i = 0; i < 9; i++) {
+                        setSmallBoardPlayableAfterReset(i);
+                        updateSmallBoardsPossibleMoves(bigBoard, possibleBoards, turn);
+                    }
+
+                    addListenersToFieldsButtons();
+                    updateTurnElement(turn);
+                });
+
                 socket.on('redirect', function(destination) {
                     window.location.href = destination;
                 });
@@ -106,7 +140,7 @@
             var yourPlayerNr = '<%- JSON.stringify(locals.yourPlayerNr) %>'; 
         </script>
         <div class="gameState">
-            <div id="players" class="gameState__players"> Red player: <%= locals.players[0] %> vs Blue player: <%= locals.players[1] %></div>
+            <div id="players" class="gameState__players"> <%= locals.players[0] %> vs <%= locals.players[1] %></div>
             <div id="board" class="board">
                 <% for (let i = 0; i < 9; i++) { %>
                     <% var isBoardPossible = locals.game.possibleBoards[i]; %>
@@ -127,7 +161,8 @@
                     <% } %>
                 <% } %>
             </div>
-            <div id="gameState__winner"><%= locals.game.winner ? (locals.game.winner === 'X' ? 'Red player has won' : 'Blue player has won') : (locals.game.winner === null ? '' : 'Draw') %></div>
+            <div id="gameState__winner"><%= locals.game.winner ? (locals.game.winner === yourPlayerNr ? 'You have won' : 'You have lost') : (locals.game.winner === null ? '' : 'Draw') %></div>
+            <div id="gameState__turn"><%= locals.game.turn === locals.yourPlayerNr ? 'Your turn' : '' %></div>
             <button id="resetGameButton">Reset game</button>
             <button id="leaveRoomButton">Leave room</button>
         </div>

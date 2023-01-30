@@ -36,7 +36,7 @@ class Rooms {
                 return user;
             });
 
-            if (this.roomsList[roomId].players.length === 0) {
+            if (this.roomsList[roomId].players.filter((name) => name !== null).length === 0) {
                 delete this.roomsList[roomId];
                 return true;
             }
