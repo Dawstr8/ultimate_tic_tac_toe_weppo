@@ -117,7 +117,8 @@ class UltimateTicTacToeGame {
         this.possibleMoves = this.initPossibleMoves();
         this.possibleBoards = this.deepCopy([true, true, true, true, true, true, true, true, true]);
         this.turn = Math.random() < 0.5 ? 'X' : 'O';
-        this.lastMove = [null, null]
+        this.lastMove = [null, null];
+        this.winner = null;
     }
 
     deepCopy(object) {

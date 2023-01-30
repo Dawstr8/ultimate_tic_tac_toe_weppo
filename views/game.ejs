@@ -19,9 +19,15 @@
                     turnElement.innerHTML = JSON.stringify(turn) === yourPlayerNr ? 'Your turn' : '';
                 }
 
-                const updateWinnerElement = (game) => {
+                const resetTurnElement = () => {
+                    const turnElement = document.getElementById('gameState__turn');
+                    turnElement.innerHTML = '';
+                };
+
+                const updateWinnerElement = (winner) => {
                     const winnerElement = document.getElementById('gameState__winner');
-                    winnerElement.innerHTML = game.winner ? (game.winner === yourPlayerNr ? 'You have won' : 'You have lost') : (game.winner === null ? '' : 'Draw')
+                    console.log(winner, yourPlayerNr);
+                    winnerElement.innerHTML = winner ? (JSON.stringify(winner) === yourPlayerNr ? 'You have won' : 'You have lost') : (winner === null ? '' : 'Draw')
                 }
 
                 const updatePlayersElement = (players) => {
@@ -108,9 +114,13 @@
                     const possibleBoards = game.possibleBoards;
                     const turn = game.turn;
                     updateSmallBoardsPossibleMoves(bigBoard, possibleBoards, turn); 
-
-                    updateTurnElement(turn);
-                    updateWinnerElement(game);
+                    
+                    if (game.winner !== null) {
+                        resetTurnElement();
+                    } else {
+                        updateTurnElement(turn);
+                    }
+                    updateWinnerElement(game.winner);
                 });
 
                 socket.on('player left room', updatePlayersElement);
@@ -126,6 +136,7 @@
 
                     addListenersToFieldsButtons();
                     updateTurnElement(turn);
+                    updateWinnerElement(game.winner);
                 });
 
                 socket.on('redirect', function(destination) {
@@ -162,7 +173,7 @@
                 <% } %>
             </div>
             <div id="gameState__winner"><%= locals.game.winner ? (locals.game.winner === yourPlayerNr ? 'You have won' : 'You have lost') : (locals.game.winner === null ? '' : 'Draw') %></div>
-            <div id="gameState__turn"><%= locals.game.turn === locals.yourPlayerNr ? 'Your turn' : '' %></div>
+            <div id="gameState__turn"><%= locals.game.winner ? '' : (locals.game.turn === locals.yourPlayerNr ? 'Your turn' : '') %></div>
             <button id="resetGameButton">Reset game</button>
             <button id="leaveRoomButton">Leave room</button>
         </div>
