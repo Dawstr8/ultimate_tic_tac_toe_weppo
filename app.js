@@ -45,7 +45,7 @@ app.post('/', (req, res) => {
 app.get('/rooms', (req, res) => {
     const uuid = req.session.uuid;
     if (checkIfUsernameIsPresent(uuid, res)) {
-        res.render('rooms', { rooms: rooms.roomsList, username: users[uuid].username });
+        res.render('rooms', { rooms: rooms.roomsList, username: users[uuid].username, currentRoom: users[uuid].room });
     };
     res.end();
 });

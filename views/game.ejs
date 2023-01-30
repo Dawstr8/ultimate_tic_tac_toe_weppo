@@ -16,7 +16,7 @@
 
                 const updateTurnElement = (turn) => {
                     const turnElement = document.getElementById('gameState__turn');
-                    turnElement.innerHTML = JSON.stringify(turn) === yourPlayerNr ? 'Your turn' : '';
+                    turnElement.innerHTML = turn === yourPlayerNr ? 'Your turn' : '';
                 }
 
                 const resetTurnElement = () => {
@@ -27,7 +27,7 @@
                 const updateWinnerElement = (winner) => {
                     const winnerElement = document.getElementById('gameState__winner');
                     console.log(winner, yourPlayerNr);
-                    winnerElement.innerHTML = winner ? (JSON.stringify(winner) === yourPlayerNr ? 'You have won' : 'You have lost') : (winner === null ? '' : 'Draw')
+                    winnerElement.innerHTML = winner ? (winner === yourPlayerNr ? 'You have won' : 'You have lost') : (winner === null ? '' : 'Draw')
                 }
 
                 const updatePlayersElement = (players) => {
@@ -148,7 +148,7 @@
 
     <body>
         <script>
-            var yourPlayerNr = '<%- JSON.stringify(locals.yourPlayerNr) %>'; 
+            var yourPlayerNr = '<%- JSON.parse(JSON.stringify(locals.yourPlayerNr)) %>'; 
         </script>
         <div class="gameState">
             <div id="players" class="gameState__players"> <%= locals.players[0] %> vs <%= locals.players[1] %></div>

@@ -6,7 +6,7 @@
     window.addEventListener('load', function () {
         var socket = io();
 
-        // joining room
+        // click listeners
         function addListenersToJoinRoomButtons() {
             var btnJoinRoomGroup = document.getElementsByClassName('btnJoinRoom');
             for (var i = 0; i < btnJoinRoomGroup.length; i++) {
@@ -18,12 +18,25 @@
         };
         addListenersToJoinRoomButtons();        
 
-        // creating room
         var btnCreateRoom = document.getElementById('btnCreateRoom');
         btnCreateRoom.addEventListener('click', function () {
             socket.emit('create room');
         });
 
+        var btnChangeUsername = document.getElementById('btnChangeUsername');
+        btnChangeUsername.addEventListener('click', function () {
+            window.location.href = '/';
+        })
+
+        if (currentRoom) {
+            var btnReturnToGame = document.getElementById('btnReturnToGame');
+            btnReturnToGame.addEventListener('click', function () { 
+                window.location.href = '/game/' + currentRoom;
+            });
+        }
+        
+
+        // socket listeners
         socket.on('room created', function(id, room) {
             var roomsList = document.getElementById('roomsList');
             roomsList.innerHTML += '<li id="roomList__room' + id + '">' +
@@ -34,7 +47,6 @@
             addListenersToJoinRoomButtons();
         });
 
-        // changing join button state
         socket.on('room state changed', function(id, room, tab) {
             var roomElement = document.getElementById('roomList__room' + id);
             var button = roomElement.childNodes[5];
@@ -43,17 +55,10 @@
             text.innerHTML = 'Players: ' + room.players.filter(name => name !== null).length + ' / 2'
         });
 
-        // deleting room
         socket.on('room deleted', function(id) {
             const room = document.getElementById('roomList__room' + id);
             room.parentNode.removeChild(room);
         });
-
-        // btnChangeUsername
-        var btnChangeUsername = document.getElementById('btnChangeUsername');
-        btnChangeUsername.addEventListener('click', function () {
-            window.location.href = '/';
-        })
 
         socket.on('redirect', function(destination) {
             window.location.href = destination;
@@ -65,18 +70,26 @@
 </head>
 
 <body>
+    <script>
+        var currentRoom = '<%- JSON.parse(JSON.stringify(locals.currentRoom)) %>'; 
+    </script>
     <div>Hello <%= username %>!</div>
     <ul id="roomsList">
         <% for (let id in rooms) { %>
-            <li id="roomList__room<%= id %>">
-                <span>Room number: <%- id %></span>
-                <span>Players: <%- rooms[id].players.filter(name => name !== null).length %> / 2</span>
-                <button data-roomid="<%= id %>" <%- rooms[id].players.filter(name => name !== null).length > 1 ? 'disabled' : '' %> class="btnJoinRoom">Join room</button>
-            </li>
+            <% if (locals.currentRoom !== id) { %>
+                <li id="roomList__room<%= id %>">
+                    <span>Room number: <%- id %></span>
+                    <span>Players: <%- rooms[id].players.filter(name => name !== null).length %> / 2</span>
+                    <button data-roomid="<%= id %>" <%- rooms[id].players.filter(name => name !== null).length > 1 ? 'disabled' : '' %> class="btnJoinRoom">Join room</button>
+                </li>
+            <% } %>
         <% } %>
     </ul>
     <button id="btnCreateRoom">Create room</button>
-    <button id="btnChangeUsername" class>Change username</button>
+    <% if (locals.currentRoom) { %>
+        <button id="btnReturnToGame">Return to game</button>
+    <% } %>
+    <button id="btnChangeUsername">Change username</button>
 </body>
 
 </html>
