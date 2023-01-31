@@ -1,0 +1,16 @@
+.saveUsername__error {
+    color: red;
+}
+
+.saveUsername__usernameMessage {
+    font-size: 20px;
+}
+
+.saveUsername__input{
+    font-size: 20px;
+    margin: 10px 0 0 0;
+}
+
+.saveUsername__button {
+    margin: 10px 0;
+}

@@ -3,19 +3,24 @@
     <meta charset="utf-8" />
 
     <head>
+        <link rel="stylesheet" href="/common.css" type="text/css">
+        <link rel="stylesheet" href="/home.css" type="text/css">
     </head>
 
     <body>
-        <form method="POST">
-            <div>
-                Username: <input type='text' name='username' value='<%= username %>' />
-            </div>
-            <button>Save</button>
-            <% if (locals.message) { %>
-                <div>
-                    <%= locals.message %>
+        <div class="center">
+            <form class="saveUsername" method="POST">
+                <div class="saveUsername__usernameMessage">
+                    Username:
                 </div>
-            <% } %>
-        </form>
+                <input class="saveUsername__input" type='text' name='username' value='<%= username %>' />
+                <% if (locals.message) { %>
+                    <div class="saveUsername__error">
+                        <%= locals.message %>
+                    </div>
+                <% } %>
+                <button class="saveUsername__button">Save</button>
+            </form>
+        </div>
     </body>
 </html>

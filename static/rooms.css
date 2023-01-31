@@ -1,0 +1,37 @@
+.rooms {
+}
+
+.rooms__greeting {
+    font-weight: 600;
+    font-size: 24px;
+}
+
+.rooms__list {
+    max-height: 100px;
+    width: 100%;
+    overflow: hidden;
+    overflow-x: scroll;
+    list-style-type: none;
+    padding-inline-start: 0;
+}
+
+.rooms__room {
+    height: 50px;
+}
+
+.rooms__buttonsGroup {
+    text-align: center;
+    padding: 20px 20px;
+}
+
+.rooms__createRoomButton {
+    width: 160px;
+}
+
+.rooms__returnToGameButton {
+    width: 160px;
+}
+
+.rooms__changeUsernameButton {
+    margin: 0;
+}

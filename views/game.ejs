@@ -3,6 +3,7 @@
     <meta charset="utf-8" />
 
     <head>
+        <link rel="stylesheet" href="/common.css" type="text/css">
         <link rel="stylesheet" href="/game.css" type="text/css">
         <script src="/socket.io/socket.io.js"></script>
         <script>
@@ -150,7 +151,7 @@
         <script>
             var yourPlayerNr = '<%- JSON.parse(JSON.stringify(locals.yourPlayerNr)) %>'; 
         </script>
-        <div class="gameState">
+        <div class="center gameState">
             <div id="players" class="gameState__players"> <%= locals.players[0] %> vs <%= locals.players[1] %></div>
             <div id="board" class="board">
                 <% for (let i = 0; i < 9; i++) { %>
