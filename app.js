@@ -56,8 +56,8 @@ app.get('/game/:id', function (req, res) {
     if (checkIfUsernameIsPresent(uuid, res)) {
         if (rooms.roomsList.hasOwnProperty(roomId)) {
             let game = rooms.roomsList[roomId].game;
-            let firstPlayer = rooms.roomsList[roomId].players[0] ? users[rooms.roomsList[roomId].players[0]].username : 'waiting for red player ...';
-            let secondPlayer = rooms.roomsList[roomId].players[1] ? users[rooms.roomsList[roomId].players[1]].username : 'waiting for blue player...';
+            let firstPlayer = rooms.roomsList[roomId].players[0] ? users[rooms.roomsList[roomId].players[0]].username : null;
+            let secondPlayer = rooms.roomsList[roomId].players[1] ? users[rooms.roomsList[roomId].players[1]].username : null;
             let yourPlayerNr = rooms.roomsList[roomId].players[0] === uuid ? 'X' : 'O';
             res.render('game', { game, players: [firstPlayer, secondPlayer], id: roomId, yourPlayerNr });
         } else {
@@ -118,8 +118,8 @@ io.on('connection', function(socket) {
             socket.join(roomId);
             io.emit('room state changed', users[uuid].room, rooms.roomsList[users[uuid].room]);
 
-            let firstPlayer = rooms.roomsList[roomId].players[0] ? users[rooms.roomsList[roomId].players[0]].username : 'waiting for red player ...';
-            let secondPlayer = rooms.roomsList[roomId].players[1] ? users[rooms.roomsList[roomId].players[1]].username : 'waiting for blue player ...';
+            let firstPlayer = rooms.roomsList[roomId].players[0] ? users[rooms.roomsList[roomId].players[0]].username : null;
+            let secondPlayer = rooms.roomsList[roomId].players[1] ? users[rooms.roomsList[roomId].players[1]].username : null;
             io.to(roomId).emit('player joined room', [firstPlayer, secondPlayer]);
 
             var destination = '/game/' + roomId;
@@ -137,8 +137,8 @@ io.on('connection', function(socket) {
                 io.emit('room state changed', users[uuid].room, rooms.roomsList[users[uuid].room]);
 
                 let roomId = users[uuid].room;
-                let firstPlayer = rooms.roomsList[roomId].players[0] ? users[rooms.roomsList[roomId].players[0]].username : 'waiting for red player ...';
-                let secondPlayer = rooms.roomsList[roomId].players[1] ? users[rooms.roomsList[roomId].players[1]].username : 'waiting for blue player ...';
+                let firstPlayer = rooms.roomsList[roomId].players[0] ? users[rooms.roomsList[roomId].players[0]].username : null;
+                let secondPlayer = rooms.roomsList[roomId].players[1] ? users[rooms.roomsList[roomId].players[1]].username : null;
                 io.to(roomId).emit('player left room', [firstPlayer, secondPlayer]);
             }
 

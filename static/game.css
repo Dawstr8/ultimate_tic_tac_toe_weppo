@@ -2,6 +2,8 @@
     width: 600px;
     display: flex;
     flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
     position: relative;
 }
 
@@ -22,7 +24,7 @@
 }
 
 .board__smallBoard--ended {
-    line-height: 182px;
+    line-height: 186px;
     font-size: 140px;
     display: inline-block;
     flex-wrap: none;
@@ -52,4 +54,24 @@
 
 .red {
     color: red;
+}
+
+.gameState { 
+    font-size: 30px;
+}
+
+.gameState__players {
+    padding: 5px 0;
+}
+
+.gameState__turn {
+    padding: 5px 0;
+}
+
+.gameState__winner {
+    padding: 5px 0;
+}
+
+.off {
+    visibility: hidden;
 }

@@ -8,9 +8,11 @@
 
 .saveUsername__input{
     font-size: 20px;
-    margin: 10px 0 0 0;
+    margin: 10px auto 0 auto;
+    display: block;
 }
 
 .saveUsername__button {
-    margin: 10px 0;
+    margin: 10px auto;
+    display: block;
 }

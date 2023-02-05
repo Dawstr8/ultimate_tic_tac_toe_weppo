@@ -8,6 +8,14 @@
         <script src="/socket.io/socket.io.js"></script>
         <script>
             window.addEventListener('load', function () {
+                (function () {
+                    window.onpageshow = function(event) {
+                        if (event.persisted) {
+                            window.location.reload();
+                        }
+                    };
+                })();
+
                 var socket = io();
 
                 // helper functions for html changes
@@ -17,23 +25,32 @@
 
                 const updateTurnElement = (turn) => {
                     const turnElement = document.getElementById('gameState__turn');
-                    turnElement.innerHTML = turn === yourPlayerNr ? 'Your turn' : '';
+                    turnElement.classList.remove('off');
+                    if (turn !== yourPlayerNr) {
+                        turnElement.classList.add('off');
+                    }
+                   
                 }
 
                 const resetTurnElement = () => {
                     const turnElement = document.getElementById('gameState__turn');
-                    turnElement.innerHTML = '';
+                    turnElement.classList.remove('off');
+                    turnElement.classList.add('off');
                 };
 
                 const updateWinnerElement = (winner) => {
                     const winnerElement = document.getElementById('gameState__winner');
-                    console.log(winner, yourPlayerNr);
-                    winnerElement.innerHTML = winner ? (winner === yourPlayerNr ? 'You have won' : 'You have lost') : (winner === null ? '' : 'Draw')
+                    winnerElement.classList.remove('off');
+                    if (winner === null){
+                        winnerElement.classList.add('off');
+                    }
+                    winnerElement.innerHTML = winner ? (winner === yourPlayerNr ? 'You have won' : 'You have lost') : 'Draw';
                 }
 
                 const updatePlayersElement = (players) => {
+                    const waitingForPlayer = players[0] === null ? 'red' : (players[1] === null ? 'blue' : '');
                     var playersElement = document.getElementById("players");
-                    playersElement.innerHTML =  players[0] + ' vs ' + players[1];
+                    playersElement.innerHTML = waitingForPlayer === '' ? players[0] + " vs " + players[1] : "Waiting for " + waitingForPlayer + " player...";
                 }
 
                 const updateField = (fieldId, player) => {
@@ -152,7 +169,9 @@
             var yourPlayerNr = '<%- JSON.parse(JSON.stringify(locals.yourPlayerNr)) %>'; 
         </script>
         <div class="center gameState">
-            <div id="players" class="gameState__players"> <%= locals.players[0] %> vs <%= locals.players[1] %></div>
+            <% const waitingForPlayer = locals.players[0] === null ? 'red' : (locals.players[1] === null ? 'blue' : '') %>
+            <div id="players" class="gameState__players"> <%= waitingForPlayer === '' ? locals.players[0] + " vs " + locals.players[1] : "Waiting for " + waitingForPlayer + " player..." %></div>
+            <div id="gameState__turn" class="gameState__turn <%= locals.game.turn !== locals.yourPlayerNr ? 'off' : '' %>">Your turn</div>
             <div id="board" class="board">
                 <% for (let i = 0; i < 9; i++) { %>
                     <% var isBoardPossible = locals.game.possibleBoards[i]; %>
@@ -173,8 +192,7 @@
                     <% } %>
                 <% } %>
             </div>
-            <div id="gameState__winner"><%= locals.game.winner ? (locals.game.winner === yourPlayerNr ? 'You have won' : 'You have lost') : (locals.game.winner === null ? '' : 'Draw') %></div>
-            <div id="gameState__turn"><%= locals.game.winner ? '' : (locals.game.turn === locals.yourPlayerNr ? 'Your turn' : '') %></div>
+            <div id="gameState__winner" class="gameState__winner <%= locals.game.winner === null ? 'off' : '' %>"><%= locals.game.winner ? (locals.game.winner === yourPlayerNr ? 'You have won' : 'You have lost') : 'Draw' %></div>
             <button id="resetGameButton">Reset game</button>
             <button id="leaveRoomButton">Leave room</button>
         </div>

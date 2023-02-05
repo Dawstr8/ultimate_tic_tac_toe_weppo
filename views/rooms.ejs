@@ -7,11 +7,19 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
         window.addEventListener('load', function () {
+            (function () {
+                    window.onpageshow = function(event) {
+                        if (event.persisted) {
+                            window.location.reload();
+                        }
+                    };
+            })();
+
             var socket = io();
 
             // click listeners
             function addListenersToJoinRoomButtons() {
-                var btnJoinRoomGroup = document.getElementsByClassName('btnJoinRoom');
+                var btnJoinRoomGroup = document.getElementsByClassName('rooms__joinRoomButton');
                 for (var i = 0; i < btnJoinRoomGroup.length; i++) {
                     btnJoinRoomGroup[i].addEventListener('click', function (event) {
                         var roomId = this.getAttribute("data-roomid");
@@ -42,10 +50,10 @@
             // socket listeners
             socket.on('room created', function(id, room) {
                 var roomsList = document.getElementById('roomsList');
-                roomsList.innerHTML += '<li id="roomList__room' + id + '">' +
-                                            '<span>Room number: ' + id + '</span>\n' +
-                                            '<span>Players: ' + room.players.filter((name) => name !== null).length + ' / 2</span>' +
-                                            '<button data-roomid="' + id + '" class="btnJoinRoom">Join room</button>' +
+                roomsList.innerHTML += '<li id="roomList__room' + id + '" class="rooms__room">' +
+                                            '<span class="rooms__number">Room number: ' + id + '</span>\n' +
+                                            '<span class="rooms__players">Players: ' + room.players.filter((name) => name !== null).length + ' / 2</span>' +
+                                            '<button data-roomid="' + id + '" class="rooms__joinRoomButton">Join room</button>' +
                                         '</li>';
                 addListenersToJoinRoomButtons();
             });
@@ -82,7 +90,7 @@
                     <li id="roomList__room<%= id %>" class="rooms__room">
                         <span class="rooms__number">Room number: <%- id %></span>
                         <span class="rooms__players">Players: <%- rooms[id].players.filter(name => name !== null).length %> / 2</span>
-                        <button class="rooms__joinRoomButton" data-roomid="<%= id %>" <%- rooms[id].players.filter(name => name !== null).length > 1 ? 'disabled' : '' %> class="btnJoinRoom">Join room</button>
+                        <button class="rooms__joinRoomButton" data-roomid="<%= id %>" <%- rooms[id].players.filter(name => name !== null).length > 1 ? 'disabled' : '' %> >Join room</button>
                     </li>
                 <% } %>
             <% } %>
